@@ -10,4 +10,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 find_package(Threads REQUIRED)
 
 add_executable(main main.cpp)
+add_executable (demo_bakery_lock demo/demoBakeryLock.cpp)
+
 target_link_libraries(main Threads::Threads)
