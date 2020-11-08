@@ -1,12 +1,14 @@
 #pragma once
 
 #include "FixnumLockable.hpp"
+#include "FixnumLockException.hpp"
 
+#include <mutex>
+#include <array>
 #include <thread>
 #include <algorithm>
 #include <shared_mutex>
 #include <unordered_map>
-#include <mutex>
 
 namespace lab {
 
@@ -23,6 +25,7 @@ namespace lab {
             _ids.reserve(N);
         }
 
+    public:
         /**
          *  @return Currect execution thread ID for locking, std::nullopt if thread is not registered
          */
@@ -38,38 +41,32 @@ namespace lab {
         }
 
         /**
-         *  @brief Registers currect execution thread for locking, assign ID to thread
-         *  @return false is thread is already registered or max number of thread reached, otherwise - true (success case)
+         *  @brief Registers currect execution thread for locking, assign ID to thread, does nothing if thread already registered
+         *  @throws MaxThreadReachedException
          */
-        auto register_thread() -> bool
+        auto register_thread() -> void
         {
             std::scoped_lock lock{_mut};
             if (_ids.find(std::this_thread::get_id()) == _ids.end()) {
                 if (_ids.size() == N) {
-                    return false;
+                    throw MaxThreadReachedException{};
                 }
                 const auto it = std::find(_threads.begin(), _threads.end(), std::thread::id{});
                 *it = std::this_thread::get_id();
                 _ids.emplace(*it, std::distance(_threads.begin(), it));
-
-                return true;
             }
-            return false;
         }
 
         /**
-         *  @brief Unregisters currect execution thread for locking
-         *  @return false if thread is not registered, otherwise - true (success case)
+         *  @brief Unregisters currect execution thread for locking, does nothing if thread is not registered
          */
-        auto unregister_thread() noexcept -> bool
+        auto unregister_thread() noexcept -> void
         {
             std::scoped_lock lock{_mut};
             if (auto it = _ids.find(std::this_thread::get_id()); it != _ids.end()) {
                 _threads[it->second] = std::thread::id{};
                 _ids.erase(it);
-                return true;
             }
-            return false;
         }
 
     private:
