@@ -13,3 +13,4 @@ add_executable(main main.cpp)
 add_executable (demo_bakery_lock demo/demoBakeryLock.cpp)
 
 target_link_libraries(main Threads::Threads)
+target_link_libraries(demo_bakery_lock Threads::Threads)
