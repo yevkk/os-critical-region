@@ -3,9 +3,18 @@
 namespace lab{
 
 DekkerLock::DekkerLock()
+<<<<<<< HEAD
     : _thread_wants_to_enter{false, false}
     , _turn(0u)
 {}
+=======
+    : FixnumLockableBase<2U>()
+{
+    _thread_wants_to_enter[0].store(false);
+    _thread_wants_to_enter[1].store(false);
+    _turn.store(0u);
+}
+>>>>>>> fa11eb9... [Task-1] Implement mutual exclusion checker, which tests whether mutual exclusion is working in Lockable primitives
 
 void DekkerLock::lock()
 {
