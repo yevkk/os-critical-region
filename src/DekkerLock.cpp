@@ -3,11 +3,9 @@
 namespace lab{
 
 DekkerLock::DekkerLock()
-{
-    _thread_wants_to_enter[0].store(false);
-    _thread_wants_to_enter[1].store(false);
-    _turn.store(0u);
-}
+    : _thread_wants_to_enter{false, false}
+    , _turn(0u)
+{}
 
 void DekkerLock::lock()
 {

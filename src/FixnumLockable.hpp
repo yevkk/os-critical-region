@@ -26,8 +26,8 @@ namespace lab {
     concept FixnumLockable = Lockable<T> && requires(T x)
     {
         {x.get_id()} -> std::same_as<std::optional<ThreadId>>;
-        {x.register_thread()} -> std::same_as<bool>;
-        {x.unregister_thread()} -> std::same_as<bool>;
+        {x.register_thread()};
+        {x.unregister_thread()};
     };
 #endif
 
