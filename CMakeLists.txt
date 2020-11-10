@@ -21,12 +21,3 @@ target_include_directories(demo_dekker_lock PUBLIC
 target_include_directories(test PUBLIC
         ${CMAKE_SOURCE_DIR}/tests/utils
         ${CMAKE_SOURCE_DIR}/src)
-
-<<<<<<< HEAD
-
-=======
-target_link_libraries(main Threads::Threads)
-target_link_libraries(demo_bakery_lock Threads::Threads)
-target_link_libraries(demo_dekker_lock Threads::Threads)
-target_link_libraries(test Threads::Threads)
->>>>>>> fa11eb9... [Task-1] Implement mutual exclusion checker, which tests whether mutual exclusion is working in Lockable primitives
