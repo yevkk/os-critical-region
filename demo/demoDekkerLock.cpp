@@ -36,7 +36,7 @@ void dec(std::int32_t& arg)
 template <class Function>
 class BaseDecorator {
 public:
-    explicit BaseDecorator(Function function) : _function(std::move(function)) {};
+    explicit BaseDecorator(Function&& function) : _function(std::move(function)) {};
 protected:
     Function _function;
 };
@@ -44,14 +44,14 @@ protected:
 template <class Function>
 class CycleDecorator : public BaseDecorator<Function> {
 public:
-    explicit CycleDecorator(Function function) : BaseDecorator<Function>(function) {};
+    explicit CycleDecorator(Function function) : BaseDecorator<Function>(std::move(function)) {};
 
     using BaseDecorator<Function>::_function;
 
     void operator()(std::int32_t& arg)
     {
         for (std::size_t i = 0; i < THREAD_OPERATION_REPEATS; ++i) {
-            _function(arg);
+            _function(std::ref(arg));
         }
     }
 };
@@ -67,7 +67,7 @@ void demonstrate_data_race()
 template <class Function>
 class ThreadSafeDecorator : public BaseDecorator<Function> {
 public:
-    explicit ThreadSafeDecorator(Function function) : BaseDecorator<Function>(function) {};
+    explicit ThreadSafeDecorator(Function function) : BaseDecorator<Function>(std::move(function)) {};
 
     using BaseDecorator<Function>::_function;
 
@@ -98,7 +98,7 @@ void avoid_data_race_with_dekker_lock()
 template <class Function>
 class ThreadSafeTryDecorator : BaseDecorator<Function> {
 public:
-    explicit ThreadSafeTryDecorator(Function function) : BaseDecorator<Function>(function) {};
+    explicit ThreadSafeTryDecorator(Function function) : BaseDecorator<Function>(std::move(function)) {};
 
     using BaseDecorator<Function>::_function;
 
