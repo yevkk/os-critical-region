@@ -21,6 +21,10 @@ namespace lab {
             _tickets.fill(0);
         }
 
+        using FixnumLockableBase<N>::get_id;
+
+        using FixnumLockableBase<N>::register_thread;
+
         /**
          *  @throws MaxThreadReachedException
          */
