@@ -10,7 +10,7 @@ namespace lab {
 /**
  * @brief Mutual exclusion primitive which uses Dekker's locking algorithm for 2 threads
  */
-class DekkerLock : public FixnumLockableBase<2u> {
+class DekkerLock : public FixnumLockableBase<2> {
 public: // methods
     DekkerLock();
 

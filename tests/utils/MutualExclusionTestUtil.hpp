@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <limits>
 #include <chrono>
+#include <mutex>
 
 #include "../../src/FixnumLockable.hpp"
 
@@ -22,14 +23,12 @@ auto check_mutual_exclusion_condition(L lock) -> bool
         threads[i] = std::thread(
             [i, &lock, bound, &counter]() {
                 while (true) {
-                    lock.lock();
+                    std::scoped_lock lk(lock);
                     if (counter >= bound) {
-                        lock.unlock();
                         break;
                     }
-                    std::this_thread::sleep_for(std::chrono::microseconds(i * 100));
+                    std::this_thread::sleep_for(std::chrono::microseconds(i * 200));
                     counter += 10000;
-                    lock.unlock();
                 }
             }
         );
