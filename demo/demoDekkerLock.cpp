@@ -7,18 +7,18 @@
 constexpr std::size_t THREAD_OPERATION_REPEATS = 100000;
 constexpr std::size_t RUNS_NUMBER = 10;
 
-template <class Subtraction, class Addition>
-void subtraction_addition_counter_demonstration(Subtraction subtraction, Addition addition)
+template <class Function>
+void subtraction_addition_counter_demonstration(Function function)
 {
     for (int i = 0; i < RUNS_NUMBER; ++i) {
         std::int32_t counter = 0;
-        std::thread addition_thread(addition, std::ref(counter));                   // running addition in a new thread
-        subtraction(counter);                                                       // running subtraction in this thread
+        std::thread parallel_thread(function, std::ref(counter));
+        function(counter);
 
-        addition_thread.join();
+        parallel_thread.join();
 
         std::cout << std::setfill('.') << std::setw(5) << std::left << i + 1
-                  << "Additions and Subtractions made: " << THREAD_OPERATION_REPEATS
+                  << "Additions in each of 2 threads made: " << THREAD_OPERATION_REPEATS
                   << "\n     Resulting counter: " << counter << "\n";
     }
 }
@@ -26,11 +26,6 @@ void subtraction_addition_counter_demonstration(Subtraction subtraction, Additio
 void inc(std::int32_t& arg)
 {
     ++arg;
-}
-
-void dec(std::int32_t& arg)
-{
-    --arg;
 }
 
 template <class Function>
@@ -42,9 +37,9 @@ protected:
 };
 
 template <class Function>
-class CycleDecorator : public BaseDecorator<Function> {
+class LoopDecorator : public BaseDecorator<Function> {
 public:
-    explicit CycleDecorator(Function function) : BaseDecorator<Function>(std::move(function)) {};
+    explicit LoopDecorator(Function function) : BaseDecorator<Function>(std::move(function)) {};
 
     using BaseDecorator<Function>::_function;
 
@@ -61,7 +56,7 @@ void demonstrate_data_race()
     std::cout << "\n***Demonstrating results of additions"
                  " and subtractions with no mutual exclusion primitives (data race demo)***\n";
 
-    subtraction_addition_counter_demonstration(CycleDecorator{dec}, CycleDecorator{inc});
+    subtraction_addition_counter_demonstration(LoopDecorator{inc});
 }
 
 template <class Function>
@@ -86,10 +81,7 @@ void avoid_data_race_with_dekker_lock()
     lab::DekkerLock dekker_lock;
 
     subtraction_addition_counter_demonstration(
-            CycleDecorator{
-                    std::bind(ThreadSafeDecorator{dec}, std::ref(dekker_lock), std::placeholders::_1)
-            },
-            CycleDecorator{
+            LoopDecorator{
                     std::bind(ThreadSafeDecorator{inc}, std::ref(dekker_lock), std::placeholders::_1)
             }
     );
@@ -117,10 +109,7 @@ void avoid_data_race_with_dekker_lock_try()
     lab::DekkerLock dekker_lock;
 
     subtraction_addition_counter_demonstration(
-        CycleDecorator{
-            std::bind(ThreadSafeTryDecorator{dec}, std::ref(dekker_lock), std::placeholders::_1)
-        },
-        CycleDecorator{
+        LoopDecorator{
             std::bind(ThreadSafeTryDecorator{inc}, std::ref(dekker_lock), std::placeholders::_1)
         }
     );
