@@ -17,7 +17,7 @@ namespace lab {
     template <std::size_t N>
     class FixnumLockableBase {
 
-    public:
+    protected:
         FixnumLockableBase() = default;
 
     public:
