@@ -27,7 +27,6 @@ namespace lab {
         [[nodiscard]]
         auto get_id() const noexcept -> std::optional<ThreadId>
         {
-            auto id = _id;
             return _id;
         }
 
@@ -67,7 +66,6 @@ namespace lab {
         }
 
     private:
-
         std::array<std::thread::id, N> _threads;
         std::mutex _mut;
         static inline thread_local std::optional<ThreadId> _id{};
