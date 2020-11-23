@@ -3,8 +3,6 @@
 #include "utils/DemoTools.hpp"
 #include <thread>
 #include <chrono>
-#include <mutex>
-#include <condition_variable>
 #include <iostream>
 
 constexpr int THREADS = 7;

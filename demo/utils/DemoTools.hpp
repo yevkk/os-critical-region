@@ -2,7 +2,6 @@
 
 #include <functional>
 #include <iomanip>
-#include <thread>
 
 constexpr std::size_t THREAD_OPERATION_REPEATS = 100000;
 
