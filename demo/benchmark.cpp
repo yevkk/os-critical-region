@@ -1,7 +1,6 @@
 #include <atomic>
 #include <mutex>
 
-
 namespace lab::utils
 {
     template<typename T>
@@ -36,12 +35,48 @@ namespace lab::utils
         std::atomic<T> _value;
     };
 
-   
+    template<typename P, typename V>
+    class Lockable {
+    public:
+        class Proxy {
+        public:
+            explicit Proxy (P& primitive, V& value) :
+                    _lock{primitive},
+                    _value{value}
+            { }
+
+            [[nodiscard]]
+            auto value () -> V&
+            {
+                return _value;
+            }
+
+        private:
+            std::lock_guard<P> _lock;
+            V _value;
+        };
+
+        template<typename... Args>
+        explicit Lockable(Args&&...args) :
+                _value{std::forward<Args...>(args...)}
+        { }
+
+        [[nodiscard]]
+        auto lock() -> Proxy
+        {
+            return Proxy{_primitive, _value};
+        }
+
+    private:
+        V _value;
+        P _primitive;
+    };
 
 }
 
 int main()
 {
+
 
     return 0;
 }
