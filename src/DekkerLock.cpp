@@ -11,29 +11,35 @@ void DekkerLock::lock()
 {
     const ThreadId this_thread_id = _get_registered_id();
     const ThreadId another_thread_id = _get_another_thread_id();
-    _thread_wants_to_enter[this_thread_id].store(true);
-    while (_thread_wants_to_enter[another_thread_id].load()) {
-        if (_turn.load() != this_thread_id) {
-            _thread_wants_to_enter[this_thread_id].store(false);
-            while (_turn.load() != this_thread_id);
-            _thread_wants_to_enter[this_thread_id].store(true);
+    _thread_wants_to_enter[this_thread_id].store(true, std::memory_order_relaxed);
+    std::atomic_thread_fence(std::memory_order_acq_rel);
+    while (_thread_wants_to_enter[another_thread_id].load(std::memory_order_relaxed)) {
+        if (_turn.load(std::memory_order_relaxed) != this_thread_id) {
+            _thread_wants_to_enter[this_thread_id].store(false, std::memory_order_relaxed);
+            std::atomic_thread_fence(std::memory_order_acq_rel);
+            while (_turn.load(std::memory_order_relaxed) != this_thread_id);
+            std::atomic_thread_fence(std::memory_order_acquire);
+            _thread_wants_to_enter[this_thread_id].store(true, std::memory_order_relaxed);
         }
     }
 }
 
 void DekkerLock::unlock()
 {
-    _turn.store(_get_another_thread_id());
-    _thread_wants_to_enter[get_id().value()].store(false);
+    _turn.store(_get_another_thread_id(), std::memory_order_relaxed);
+    std::atomic_thread_fence(std::memory_order_release);
+    _thread_wants_to_enter[get_id().value()].store(false, std::memory_order_relaxed);
+    unregister_thread();
 }
 
 auto DekkerLock::try_lock() -> bool
 {
     const ThreadId another_thread_id = _get_another_thread_id();
-    _thread_wants_to_enter[get_id().value()].store(true);
-    while (_thread_wants_to_enter[another_thread_id].load()) {
-        if (_turn.load() == another_thread_id) {
-            _thread_wants_to_enter[get_id().value()].store(false);
+    _thread_wants_to_enter[get_id().value()].store(true, std::memory_order_relaxed);
+    std::atomic_thread_fence(std::memory_order_acq_rel);
+    while (_thread_wants_to_enter[another_thread_id].load(std::memory_order_relaxed)) {
+        if (_turn.load(std::memory_order_relaxed) == another_thread_id) {
+            _thread_wants_to_enter[get_id().value()].store(false, std::memory_order_relaxed);
             return false;
         }
     }

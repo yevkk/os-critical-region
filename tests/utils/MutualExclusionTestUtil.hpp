@@ -21,19 +21,22 @@ namespace lab::test::util {
 template <FixnumLockable L, std::size_t N = 2>
 auto check_mutual_exclusion_condition(L&& lock) -> bool
 {
-    const std::uint32_t bound = 10e6;
+    const std::uint32_t bound = 10e3;
     std::uint32_t counter = 0u;
     std::array<std::thread, N> threads;
+    std::atomic_bool lock_is_acquired = false;
+    std::atomic_bool got_collision = false;
     for (std::size_t i = 0; i < N; ++i) {
         threads[i] = std::thread(
-            [i, &lock, bound, &counter]() {
-                while (true) {
+            [&]() {
+                while (counter < bound) {
                     std::scoped_lock lk(lock);
-                    if (counter >= bound) {
-                        break;
+                    if (lock_is_acquired.exchange(true)) {
+                        got_collision.store(true);
                     }
-                    std::this_thread::sleep_for(std::chrono::microseconds(i * 500));
-                    counter += 10000;
+                    std::this_thread::sleep_for(std::chrono::microseconds((i % 2) * 100));
+                    ++counter;
+                    lock_is_acquired.store(false);
                 }
             }
         );
@@ -43,7 +46,7 @@ auto check_mutual_exclusion_condition(L&& lock) -> bool
         threads[i].join();
     }
 
-    return counter == bound;
+    return !got_collision.load();
 }
 
 } // namespace lab::test::util
