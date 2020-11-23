@@ -15,6 +15,7 @@ add_executable(main main.cpp)
 add_executable(demo_bakery_lock demo/demoBakeryLock.cpp)
 add_executable(demo_dekker_lock demo/demoDekkerLock.cpp src/DekkerLock.cpp)
 add_executable(test tests/test.cpp src/DekkerLock.cpp)
+add_executable(benchmark demo/benchmark.cpp)
 
 target_include_directories(demo_dekker_lock PUBLIC
         ${CMAKE_SOURCE_DIR}/src)
