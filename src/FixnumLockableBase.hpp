@@ -7,8 +7,6 @@
 #include <array>
 #include <thread>
 #include <algorithm>
-#include <shared_mutex>
-#include <unordered_map>
 
 namespace lab {
 
@@ -20,58 +18,56 @@ namespace lab {
     class FixnumLockableBase {
 
     protected:
-        FixnumLockableBase()
-        {
-            _ids.reserve(N);
-        }
+        FixnumLockableBase() = default;
 
     public:
         /**
          *  @return Currect execution thread ID for locking, std::nullopt if thread is not registered
          */
+        [[nodiscard]]
         auto get_id() const noexcept -> std::optional<ThreadId>
         {
-            std::shared_lock lock{_mut};
-            if (auto it = _ids.find(std::this_thread::get_id()); it != _ids.end()) {
-                return it->second;
-            }
-            else {
-                return std::nullopt;
-            }
+            return _id;
         }
 
         /**
          *  @brief Registers currect execution thread for locking, assign ID to thread, does nothing if thread already registered
          *  @throws MaxThreadReachedException
          */
-        auto register_thread() -> void
+        auto register_thread() -> bool
         {
+            if (_id) {
+                return false;
+            }
             std::scoped_lock lock{_mut};
-            if (_ids.find(std::this_thread::get_id()) == _ids.end()) {
-                if (_ids.size() == N) {
-                    throw MaxThreadReachedException{};
-                }
-                const auto it = std::find(_threads.begin(), _threads.end(), std::thread::id{});
+            if (auto it = std::find(_threads.begin(), _threads.end(), std::thread::id{}); it != _threads.end()) {
                 *it = std::this_thread::get_id();
-                _ids.emplace(*it, std::distance(_threads.begin(), it));
+                _id = std::distance(_threads.begin(), it);
+                return true;
+            }
+            else {
+                throw MaxThreadReachedException{};
             }
         }
 
         /**
          *  @brief Unregisters currect execution thread for locking, does nothing if thread is not registered
          */
-        auto unregister_thread() noexcept -> void
+        auto unregister_thread() noexcept -> bool
         {
-            std::scoped_lock lock{_mut};
-            if (auto it = _ids.find(std::this_thread::get_id()); it != _ids.end()) {
-                _threads[it->second] = std::thread::id{};
-                _ids.erase(it);
+            if (!_id) {
+                return false;
             }
+            std::scoped_lock lock{_mut};
+            const auto it = std::find(_threads.begin(), _threads.end(), std::this_thread::get_id());
+            *it = std::thread::id{};
+            _id.reset();
+            return true;
         }
 
     private:
-        std::unordered_map<std::thread::id, ThreadId> _ids;
-        std::array <std::thread::id, N> _threads;
-        mutable std::shared_mutex _mut;
+        std::array<std::thread::id, N> _threads;
+        std::mutex _mut;
+        static inline thread_local std::optional<ThreadId> _id{};
     };
 }

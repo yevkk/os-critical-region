@@ -5,4 +5,4 @@
 
 Use `_` prefix for private members and methods: `_my_private_field`;
 
-Following codestyle is not strict, but prefferable
+Following code style is not strict, but preferable
