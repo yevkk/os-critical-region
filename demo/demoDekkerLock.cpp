@@ -1,8 +1,10 @@
 #include <iostream>
+#include <functional>
 #include <iomanip>
 #include <thread>
 
 #include "DekkerLock.hpp"
+#include "utils/DemoTools.hpp"
 
 constexpr std::size_t THREAD_OPERATION_REPEATS = 100000;
 constexpr std::size_t RUNS_NUMBER = 10;
