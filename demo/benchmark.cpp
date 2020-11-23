@@ -1,3 +1,6 @@
+#include "../src/LockPrimitives.hpp"
+
+#include <iostream>
 #include <atomic>
 #include <mutex>
 
@@ -13,6 +16,11 @@ namespace lab::utils
         void increment() noexcept
         {
             ++_value;
+        }
+
+        auto value() -> T&
+        {
+            return _value;
         }
 
     private:
@@ -72,11 +80,25 @@ namespace lab::utils
         P _primitive;
     };
 
-}
+} //lab::utils
 
 int main()
 {
+    using namespace lab;
+    using namespace lab::utils;
 
+    Lockable<std::mutex, Incrementable<int>> lockable{0};
+
+    lockable
+        .lock()
+            .value()
+                .increment();
+    lockable.lock().value().increment();
+    lockable.lock().value().increment();
+    lockable.lock().value().increment();
+    lockable.lock().value().increment();
+
+    std::cout << lockable.lock().value().value();
 
     return 0;
 }
