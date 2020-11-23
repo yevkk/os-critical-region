@@ -28,8 +28,8 @@ auto main(int argc, char** argv) -> int
 {
     std::cout << "Result of EmptyLock mutual exclusion check: " << std::boolalpha <<
         lab::test::util::check_mutual_exclusion_condition(EmptyLock{}) << std::endl;
-    std::cout << "Result of BakeryLock<4> mutual exclusion check: " << std::boolalpha <<
-        lab::test::util::check_mutual_exclusion_condition<lab::BakeryLock<4>, 4>(lab::BakeryLock<4>{}) << std::endl;
+    std::cout << "Result of BakeryLock<6> mutual exclusion check: " << std::boolalpha <<
+        lab::test::util::check_mutual_exclusion_condition<lab::BakeryLock<6>, 6>(lab::BakeryLock<6>{}) << std::endl;
     std::cout << "Result of DekkerLock mutual exclusion check: " << std::boolalpha <<
         lab::test::util::check_mutual_exclusion_condition(lab::DekkerLock{}) << std::endl;
     return 0;
