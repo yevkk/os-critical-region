@@ -39,6 +39,11 @@ namespace lab::utils
             _value.fetch_add(1, std::memory_order::memory_order_relaxed);
         }
 
+        auto value() -> std::atomic<T>&
+        {
+            return _value;
+        }
+
     private:
         std::atomic<T> _value;
     };
@@ -61,7 +66,7 @@ namespace lab::utils
 
         private:
             std::lock_guard<P> _lock;
-            V _value;
+            V& _value;
         };
 
         template<typename... Args>
@@ -86,19 +91,6 @@ int main()
 {
     using namespace lab;
     using namespace lab::utils;
-
-    Lockable<std::mutex, Incrementable<int>> lockable{0};
-
-    lockable
-        .lock()
-            .value()
-                .increment();
-    lockable.lock().value().increment();
-    lockable.lock().value().increment();
-    lockable.lock().value().increment();
-    lockable.lock().value().increment();
-
-    std::cout << lockable.lock().value().value();
 
     return 0;
 }
