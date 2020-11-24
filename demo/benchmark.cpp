@@ -162,11 +162,13 @@ int main()
         std::cout << std::endl;
     };
 
+
 //    benchmark_primitive("std::atomic", LockableValue<DummyLock, Incrementable<std::atomic_int>>{0});
 //    benchmark_primitive("std::mutex", LockableValue<std::mutex, Incrementable<int>>{0});
 //    benchmark_primitive("lab::SpinLock", LockableValue<SpinLock, Incrementable<int>>{0});
 //    benchmark_primitive("lab::DekkerLock", LockableValue<DekkerLock, Incrementable<int>>{0});
     benchmark_primitive("lab::ImprovedBakeryLock", LockableValue<ImprovedBakeryLock, Incrementable<int>>{0});
+
 
     return 0;
 }
