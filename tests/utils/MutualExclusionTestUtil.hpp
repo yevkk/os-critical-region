@@ -21,7 +21,7 @@ namespace lab::test::util {
 template <FixnumLockable L, std::size_t N = 2>
 auto check_mutual_exclusion_condition(L&& lock) -> bool
 {
-    const std::uint32_t bound = 10e3;
+    const std::uint32_t bound = 1e4;
     std::uint32_t counter = 0u;
     std::array<std::thread, N> threads;
     std::atomic_bool lock_is_acquired = false;
