@@ -17,13 +17,13 @@ public:
     void lock() noexcept
     {
         /// Acquire unique ticket
-        const auto ticket = _counter.fetch_add(1, std::memory_order_acquire) + 1;
+        const auto ticket = _counter.fetch_add(1, std::memory_order_relaxed) + 1;
+
+        /// Fence to ensure ticket was acquired before
+        std::atomic_thread_fence(std::memory_order_acquire);
 
         /// Wait until our turn
-        auto expected = ticket;
-        while (!_current.compare_exchange_weak(expected, ticket, std::memory_order_release)) {
-            expected = ticket;
-        }
+        while (_current.load(std::memory_order_relaxed) != ticket);
     }
 
     /**
@@ -43,7 +43,7 @@ public:
     bool try_lock() noexcept
     {
         /// Assume we are going to acquire a lock
-        auto ticket = _counter.load(std::memory_order_acquire) + 1;
+        auto ticket = _counter.load(std::memory_order_relaxed) + 1;
 
         /// Check whether ticket is available
         if (_current.load(std::memory_order_acquire) != ticket) {
