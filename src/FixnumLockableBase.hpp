@@ -6,6 +6,7 @@
 #include <mutex>
 #include <array>
 #include <thread>
+#include <optional>
 #include <algorithm>
 
 namespace lab {

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <thread>
+#include <functional>
 
 #include "DekkerLock.hpp"
 
