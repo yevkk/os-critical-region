@@ -3,6 +3,7 @@
 #include "FixnumLockableBase.hpp"
 
 #include <array>
+#include <atomic>
 
 namespace lab {
     
@@ -16,10 +17,7 @@ namespace lab {
     class BakeryLock : public FixnumLockableBase<N> {
         
     public:
-        BakeryLock() : FixnumLockableBase<N>() {
-            _entering.fill(false);
-            _tickets.fill(0);
-        }
+        BakeryLock() : FixnumLockableBase<N>() {}
 
         using FixnumLockableBase<N>::get_id;
 
@@ -47,7 +45,7 @@ namespace lab {
          *  @throws MaxThreadReachedException 
          */
         auto unlock() -> void 
-        {
+        {           
             ThreadId id = _check_if_registered();
             _tickets[id] = 0;
         }
@@ -82,9 +80,9 @@ namespace lab {
         void _get_ticket(ThreadId id) {
             _entering[id] = true;
             Ticket max_ticket = 0;
-            for (auto t : _tickets)
-                if (t > max_ticket)
-                    max_ticket = t;
+            for (int t = 0; t < N; ++t)
+                if (_tickets[t] > max_ticket)
+                    max_ticket = _tickets[t];
             _tickets[id] = ++max_ticket;
             _entering[id] = false;
         }
@@ -102,8 +100,10 @@ namespace lab {
             }
             return id.value();
         }
+
+        
     private:
-        std::array <bool, N> _entering;
-        std::array <Ticket, N> _tickets;
+        std::array<std::atomic<bool>,N> _entering;
+        std::array<std::atomic<Ticket>, N> _tickets;
     };
 }
