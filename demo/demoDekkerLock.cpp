@@ -17,7 +17,7 @@ void subtraction_addition_counter_demonstration(Function function)
         parallel_thread.join();
 
         std::cout << std::setfill('.') << std::setw(5) << std::left << i + 1
-                  << "Additions in each of 2 threads made: " << THREAD_OPERATION_REPEATS
+                  << "Additions in each of 2 threads made: " << lab::demo::util::THREAD_OPERATION_REPEATS
                   << "\n     Resulting counter: " << counter << "\n";
     }
 }
@@ -32,7 +32,7 @@ void demonstrate_data_race()
     std::cout << "\n***Demonstrating results of additions"
                  " and subtractions with no mutual exclusion primitives (data race demo)***\n";
 
-    subtraction_addition_counter_demonstration(LoopDecorator{inc});
+    subtraction_addition_counter_demonstration(lab::demo::util::LoopDecorator{inc});
 }
 
 void avoid_data_race_with_dekker_lock()
@@ -41,8 +41,8 @@ void avoid_data_race_with_dekker_lock()
     lab::DekkerLock dekker_lock;
 
     subtraction_addition_counter_demonstration(
-            LoopDecorator{
-                    std::bind(ThreadSafeDecorator{inc}, std::ref(dekker_lock), std::placeholders::_1)
+        lab::demo::util::LoopDecorator{
+                    std::bind(lab::demo::util::ThreadSafeDecorator{inc}, std::ref(dekker_lock), std::placeholders::_1)
             }
     );
 }
@@ -53,8 +53,8 @@ void avoid_data_race_with_dekker_lock_try()
     lab::DekkerLock dekker_lock;
 
     subtraction_addition_counter_demonstration(
-        LoopDecorator{
-            std::bind(ThreadSafeTryDecorator{inc}, std::ref(dekker_lock), std::placeholders::_1)
+        lab::demo::util::LoopDecorator{
+            std::bind(lab::demo::util::ThreadSafeTryDecorator{inc}, std::ref(dekker_lock), std::placeholders::_1)
         }
     );
 }

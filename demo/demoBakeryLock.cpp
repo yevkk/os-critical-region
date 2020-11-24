@@ -5,10 +5,9 @@
 #include <chrono>
 #include <iostream>
 
-constexpr int THREADS = 7;
+constexpr int THREADS = 5;
 constexpr std::size_t N = THREADS - 1;
 
-std::size_t ready = 0;
 std::int32_t iterations[N];
 
 bool volatile start = false;
@@ -32,10 +31,10 @@ void execute(Function function) {
     bakery_lock.register_thread();
     std::size_t id = *bakery_lock.get_id();
 
-    while (!start);
+    //while (!start);
     
-    LoopDecorator{
-        std::bind(ThreadSafeDecorator{
+    lab::demo::util::LoopDecorator{
+        std::bind(lab::demo::util::ThreadSafeDecorator{
             std::bind(function, id, std::placeholders::_1)
         },
         std::ref(bakery_lock),
@@ -45,15 +44,15 @@ void execute(Function function) {
 
 void monitor() {
     while (!stop) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(250));
         {
             std::lock_guard lk(bakery_lock);
-            std::cout << count << std::endl;
+            std::cout << std::endl << count << std::endl;
             for (int i = 0; i < N; ++i)
                 std::cout << "Thread " << i << " made " << iterations[i] << " iterations\n";
             std::cout << std::endl;
             std::fill(iterations, iterations + N, 0);
-        }
-        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        }       
     }
 }
 
@@ -70,7 +69,8 @@ void demonstrate() {
 
     for (int i = 0; i < N; ++i)
         thr[i].join();
-    stop = false;
+    stop = true;
+    m.join();
 }
 
 
