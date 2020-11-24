@@ -42,7 +42,7 @@ void avoid_data_race_with_dekker_lock()
 
     subtraction_addition_counter_demonstration(
             [&](std::int32_t& arg) {
-                ab::demo::util::LoopDecorator{
+                lab::demo::util::LoopDecorator{
                         std::bind(lab::demo::util::ThreadSafeDecorator{inc}, std::ref(dekker_lock), std::placeholders::_1)
                 }(arg);
                 dekker_lock.unregister_thread();
