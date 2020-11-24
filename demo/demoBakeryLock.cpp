@@ -42,7 +42,7 @@ void execute(Function function) {
     ) }(count);
 }
 
-void monitor() {
+void observer() {
     while (!stop) {
         std::this_thread::sleep_for(std::chrono::milliseconds(250));
         {
@@ -64,7 +64,7 @@ void demonstrate() {
         else
             thr[i] = std::thread{ execute<decltype(dec)>, dec };
     }
-    std::thread m = std::thread(monitor);
+    std::thread m = std::thread(observer);
     start = true;
 
     for (int i = 0; i < N; ++i)
