@@ -44,7 +44,7 @@ namespace lab::utils
 
         void increment()
         {
-            _value.fetch_add(1, std::memory_order::memory_order_relaxed);
+            _value.fetch_add(1, std::memory_order_relaxed);
         }
 
         auto value() -> std::atomic<T>&

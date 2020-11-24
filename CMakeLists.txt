@@ -36,3 +36,5 @@ set(SRC_LIST
 add_executable(benchmark demo/benchmark.cpp ${SRC_LIST})
 target_compile_options(benchmark PRIVATE -O3)
 target_include_directories(benchmark PUBLIC ${CMAKE_SOURCE_DIR}/src})
+
+target_compile_options(benchmark PRIVATE -O3)
