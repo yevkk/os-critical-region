@@ -1,4 +1,7 @@
 #include "../src/LockPrimitives.hpp"
+#include "../src/DekkerLock.hpp"
+#include "../src/BakeryLock.hpp"
+#include "../src/ImprovedBakeryLock.hpp"
 
 #include <iostream>
 #include <atomic>
@@ -7,7 +10,6 @@
 #include <chrono>
 #include <vector>
 #include <string>
-#include <iostream>
 
 
 namespace lab::utils
@@ -92,7 +94,7 @@ namespace lab::utils
     };
 
     constexpr std::size_t N = 1e7;
-    constexpr std::size_t THREADS_NO = 8;
+    constexpr std::size_t THREADS_NO = 4;
     template<typename TUM, typename P, typename V> //TUM - Time Unit of Measurement
     int benchmark(
             LockableValue<P, V>&& lockable_value,
@@ -138,13 +140,15 @@ int main()
     constexpr int second_col_size = 10;
 
     auto benchmark_primitive  = []<typename P, typename V>(const std::string& label,
-                                                           LockableValue<P, V>&& lockable_value) {
+                                                           LockableValue<P, V>&& lockable_value,
+                                                           std::size_t max_threads = THREADS_NO,
+                                                           std::size_t min_threads = 2) {
         std::cout << '[' << label << ']' << std::endl;
         std::cout
                 << "| Threads | Time(ms) |" << std::endl
                 << '|' << std::string(first_col_size, '-') << '|'
                 << std::string(second_col_size, '-') << '|' << std::endl;
-        for (std::size_t threads_number = 2; threads_number <= THREADS_NO; threads_number++) {
+        for (std::size_t threads_number = min_threads; threads_number <= max_threads; threads_number++) {
             int res = benchmark<TUM>(std::move(lockable_value), threads_number);
             std::cout
                     << '|' << std::string(first_col_size - 1 - std::to_string(threads_number).length(), ' ')
@@ -159,9 +163,15 @@ int main()
         std::cout << std::endl;
     };
 
+
     benchmark_primitive("std::atomic", LockableValue<DummyLock, Incrementable<std::atomic_int>>{0});
     benchmark_primitive("std::mutex", LockableValue<std::mutex, Incrementable<int>>{0});
     benchmark_primitive("lab::SpinLock", LockableValue<SpinLock, Incrementable<int>>{0});
+    benchmark_primitive("lab::DekkerLock", LockableValue<DekkerLock, Incrementable<int>>{0}, 2);
+    benchmark_primitive("lab::ImprovedBakeryLock", LockableValue<ImprovedBakeryLock, Incrementable<int>>{0});
+//    benchmark_primitive("lab::BakeryLock<2>", LockableValue<BakeryLock<2>, Incrementable<int>>{0}, 2, 2);
+//    benchmark_primitive("lab::BakeryLock<3>", LockableValue<BakeryLock<3>, Incrementable<int>>{0}, 3, 3);
+//    benchmark_primitive("lab::BakeryLock<4>", LockableValue<BakeryLock<4>, Incrementable<int>>{0}, 4, 4);
 
     return 0;
 }
