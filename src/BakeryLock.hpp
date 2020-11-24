@@ -34,7 +34,8 @@ namespace lab {
            
             _get_ticket(id);
             for (std::size_t j = 0; j < N; ++j) {
-                while (_entering[j]) {}
+                if(j<id)
+                    while (_entering[j]) {}
                 while ((_tickets[j] != 0) &&                                // ticket = 0 means thread j isn't around critical section
                         ((_tickets[j] < _tickets[id])                       // thread j came first so served first
                         || ((_tickets[j] == _tickets[id]) && (j < id))))    // thread j came at the same time but has higher priority
@@ -61,7 +62,8 @@ namespace lab {
             
             _get_ticket(id);
             for (std::size_t j = 0; j < N; ++j) {
-                while (_entering[j]) {}
+                if (j < id)
+                    while (_entering[j]) {}
                 if (_tickets[j] != 0)                                      // ticket = 0 means thread j isn't around critical section
                     if ((_tickets[j] < _tickets[id])                       // thread j came first so served first
                         || ((_tickets[j] == _tickets[id]) && (j < id)))    // thread j came at the same time but has higher priority
@@ -94,9 +96,10 @@ namespace lab {
          */
         ThreadId _check_if_registered() {
             std::optional<ThreadId> id = get_id();
-            if (id == std::nullopt)
+            if (id == std::nullopt) {
                 register_thread();
-            id = get_id();
+                id = get_id();
+            }
             return id.value();
         }
     private:

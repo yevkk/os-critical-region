@@ -3,6 +3,7 @@
 #include "../src/BakeryLock.hpp"
 #include "../src/ImprovedBakeryLock.hpp"
 
+#include <iostream>
 #include <atomic>
 #include <mutex>
 #include <future>
@@ -10,6 +11,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+
 
 namespace lab::utils
 {
@@ -130,6 +132,7 @@ int main()
 {
     using namespace lab;
     using namespace lab::utils;
+
     using TUM = std::chrono::milliseconds;
 
     std::cout << "N = " << N << std::endl;
@@ -164,7 +167,6 @@ int main()
 //    benchmark_primitive("lab::SpinLock", LockableValue<SpinLock, Incrementable<int>>{0});
 //    benchmark_primitive("lab::DekkerLock", LockableValue<DekkerLock, Incrementable<int>>{0});
     benchmark_primitive("lab::ImprovedBakeryLock", LockableValue<ImprovedBakeryLock, Incrementable<int>>{0});
-
 
     return 0;
 }
