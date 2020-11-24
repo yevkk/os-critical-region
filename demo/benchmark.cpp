@@ -1,11 +1,12 @@
 #include "../src/LockPrimitives.hpp"
 
-#include <iostream>
 #include <atomic>
 #include <mutex>
 #include <future>
 #include <chrono>
 #include <vector>
+#include <string>
+#include <iostream>
 
 namespace lab::utils
 {
@@ -126,15 +127,39 @@ int main()
 {
     using namespace lab;
     using namespace lab::utils;
-
     using TUM = std::chrono::milliseconds;
 
-    for (std::size_t threads_number = 2; threads_number <= THREADS_NO; threads_number++) {
+    std::cout << "N = " << N << std::endl;
+
+    constexpr int first_col_size = 9;
+    constexpr int second_col_size = 10;
+
+    auto benchmark_primitive  = []<typename P, typename V>(const std::string& label,
+                                                           LockableValue<P, V>&& lockable_value) {
+        std::cout << '[' << label << ']' << std::endl;
         std::cout
-            << threads_number << ":\t"
-            << benchmark<TUM>(LockableValue<std::mutex, Incrementable<int>>{0}, threads_number)
-            << std::endl;
-    }
+                << "| Threads | Time(ms) |" << std::endl
+                << '|' << std::string(first_col_size, '-') << '|'
+                << std::string(second_col_size, '-') << '|' << std::endl;
+        for (std::size_t threads_number = 2; threads_number <= THREADS_NO; threads_number++) {
+            int res = benchmark<TUM>(std::move(lockable_value), threads_number);
+            std::cout
+                    << '|' << std::string(first_col_size - 1 - std::to_string(threads_number).length(), ' ')
+                    << threads_number << " |"
+                    << std::string(second_col_size - 1 - std::to_string(res).length(), ' ')
+                    << res << " |"
+                    << std::endl;
+        }
+        std::cout
+                << '|' << std::string(first_col_size, '=') << '|'
+                << std::string(second_col_size, '=') << '|' << std::endl;
+        std::cout << std::endl;
+    };
+
+    benchmark_primitive("std::atomic", LockableValue<DummyLock, Incrementable<std::atomic_int>>{0});
+    benchmark_primitive("std::mutex", LockableValue<std::mutex, Incrementable<int>>{0});
+    benchmark_primitive("lab::SpinLock", LockableValue<SpinLock, Incrementable<int>>{0});
+
 
     return 0;
 }
