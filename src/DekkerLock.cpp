@@ -29,7 +29,6 @@ void DekkerLock::unlock()
     _turn.store(_get_another_thread_id(), std::memory_order_relaxed);
     std::atomic_thread_fence(std::memory_order_release);
     _thread_wants_to_enter[get_id().value()].store(false, std::memory_order_relaxed);
-    unregister_thread();
 }
 
 auto DekkerLock::try_lock() -> bool

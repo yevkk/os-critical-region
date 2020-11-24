@@ -81,9 +81,13 @@ void avoid_data_race_with_dekker_lock()
     lab::DekkerLock dekker_lock;
 
     subtraction_addition_counter_demonstration(
-            LoopDecorator{
-                    std::bind(ThreadSafeDecorator{inc}, std::ref(dekker_lock), std::placeholders::_1)
+            [&](std::int32_t& arg) {
+                LoopDecorator{
+                        std::bind(ThreadSafeDecorator{inc}, std::ref(dekker_lock), std::placeholders::_1)
+                }(arg);
+                dekker_lock.unregister_thread();
             }
+
     );
 }
 
@@ -109,8 +113,11 @@ void avoid_data_race_with_dekker_lock_try()
     lab::DekkerLock dekker_lock;
 
     subtraction_addition_counter_demonstration(
-        LoopDecorator{
-            std::bind(ThreadSafeTryDecorator{inc}, std::ref(dekker_lock), std::placeholders::_1)
+        [&](std::int32_t& arg) {
+            LoopDecorator{
+                    std::bind(ThreadSafeTryDecorator{inc}, std::ref(dekker_lock), std::placeholders::_1)
+            }(arg);
+            dekker_lock.unregister_thread();
         }
     );
 }
