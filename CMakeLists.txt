@@ -30,7 +30,6 @@ set(SRC_LIST
         ${SRC_DIR}/ImprovedBakeryLock.hpp
         ${SRC_DIR}/LockPrimitives.hpp
         ${SRC_DIR}/DekkerLock.cpp
-        ${SRC_DIR}/ImprovedBakeryLock.hpp
         )
 
 add_executable(benchmark demo/benchmark.cpp ${SRC_LIST})
