@@ -124,6 +124,36 @@ namespace lab::utils
         return duration_cast<TUM>(system_clock::now() - start_ts).count();
     }
 
+    template<typename TUM> //TUM - Time Unit of Measurement
+    int benchmark_atomic(
+            std::size_t threads_number = THREADS_NO,
+            std::size_t n = N)
+    {
+        using namespace std::chrono;
+        auto start_ts = system_clock::now();
+
+        std::atomic_int counter = 0;
+
+        const auto func = [&counter](std::size_t n)
+        {
+            for (std::size_t i = 0; i < n; i++) {
+                counter.fetch_add(1, std::memory_order_relaxed);
+            }
+        };
+
+        std::vector<std::future<void>> futures;
+        futures.reserve(threads_number);
+        for (std::size_t i = 0; i < threads_number - 1; i++) {
+            futures.emplace_back(std::async(std::launch::async, func, n));
+        }
+
+        for (auto &fut : futures) {
+            fut.wait();
+        }
+
+        return duration_cast<TUM>(system_clock::now() - start_ts).count();
+    }
+
 
 } //lab::utils
 
@@ -165,13 +195,38 @@ int main()
 
 
     benchmark_primitive("std::atomic", LockableValue<DummyLock, Incrementable<std::atomic_int>>{0});
-    benchmark_primitive("std::mutex", LockableValue<std::mutex, Incrementable<int>>{0});
-    benchmark_primitive("lab::SpinLock", LockableValue<SpinLock, Incrementable<int>>{0});
-    benchmark_primitive("lab::DekkerLock", LockableValue<DekkerLock, Incrementable<int>>{0}, 2);
-    benchmark_primitive("lab::ImprovedBakeryLock", LockableValue<ImprovedBakeryLock, Incrementable<int>>{0});
+//    benchmark_primitive("std::mutex", LockableValue<std::mutex, Incrementable<int>>{0});
+//    benchmark_primitive("lab::SpinLock", LockableValue<SpinLock, Incrementable<int>>{0});
+//    benchmark_primitive("lab::DekkerLock", LockableValue<DekkerLock, Incrementable<int>>{0}, 2);
+//    benchmark_primitive("lab::ImprovedBakeryLock", LockableValue<ImprovedBakeryLock, Incrementable<int>>{0});
 //    benchmark_primitive("lab::BakeryLock<2>", LockableValue<BakeryLock<2>, Incrementable<int>>{0}, 2, 2);
 //    benchmark_primitive("lab::BakeryLock<3>", LockableValue<BakeryLock<3>, Incrementable<int>>{0}, 3, 3);
 //    benchmark_primitive("lab::BakeryLock<4>", LockableValue<BakeryLock<4>, Incrementable<int>>{0}, 4, 4);
+
+    auto benchmark_atomic_no_oop = [](const std::string& label,
+                                      std::size_t max_threads = THREADS_NO,
+                                      std::size_t min_threads = 2) {
+        std::cout << '[' << label << ']' << std::endl;
+        std::cout
+                << "| Threads | Time(ms) |" << std::endl
+                << '|' << std::string(first_col_size, '-') << '|'
+                << std::string(second_col_size, '-') << '|' << std::endl;
+        for (std::size_t threads_number = min_threads; threads_number <= max_threads; threads_number++) {
+            int res = benchmark_atomic<TUM>(threads_number);
+            std::cout
+                    << '|' << std::string(first_col_size - 1 - std::to_string(threads_number).length(), ' ')
+                    << threads_number << " |"
+                    << std::string(second_col_size - 1 - std::to_string(res).length(), ' ')
+                    << res << " |"
+                    << std::endl;
+        }
+        std::cout
+                << '|' << std::string(first_col_size, '=') << '|'
+                << std::string(second_col_size, '=') << '|' << std::endl;
+        std::cout << std::endl;
+    };
+
+    benchmark_atomic_no_oop("std::atomic no oop");
 
     return 0;
 }
